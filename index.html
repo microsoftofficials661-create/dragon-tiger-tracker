@@ -265,17 +265,9 @@
         });
 
         if (response.ok) {
-          localStorage.setItem('dt_pro_unlocked', 'true');
-          localStorage.setItem('dt_user_utr', utr);
-          isPro = true;
-
-          const badge = document.getElementById('modeBadge');
-          badge.innerText = 'PRO EDITION';
-          badge.className = 'badge pro-active';
-          updateSuggestion();
-
+          localStorage.setItem('dt_pending_utr', utr);
           closePaywall();
-          alert('UTR submitted successfully! Pro Edition unlocked.');
+          alert('UTR Submitted! We received your request. Pro Edition will be unlocked after Mohan verifies the transaction in the bank app.');
         } else {
           alert('Failed to send verification request. Check your internet connection.');
         }
