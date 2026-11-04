@@ -206,7 +206,46 @@
           if (val === "APPROVED") {
             localStorage.setItem("dt_pro_unlocked", "true");
             isPro = true;
-            applyProStatus();
+            
+    // Cloud Backup Functions
+    async function syncDataToCloud() {
+      if (!deviceId) return;
+      try {
+        await fetch(`${FIREBASE_URL}/backups/${deviceId}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            history: historyLog,
+            level: currentLevel,
+            pnl: totalPnl,
+            isPro: isPro,
+            lastSync: new Date().toISOString()
+          })
+        });
+      } catch (err) {
+        console.error("Backup sync error:", err);
+      }
+    }
+
+    async function restoreDataFromCloud() {
+      if (!deviceId) return;
+      try {
+        const res = await fetch(`${FIREBASE_URL}/backups/${deviceId}.json`);
+        const data = await res.json();
+        if (data) {
+          if (Array.isArray(data.history)) historyLog = data.history;
+          if (data.level) currentLevel = data.level;
+          if (typeof data.pnl === "number") totalPnl = data.pnl;
+          renderHistory();
+          updateUI();
+        }
+      } catch (err) {
+        console.error("Restore error:", err);
+      }
+    }
+
+    applyProStatus();
+    restoreDataFromCloud();
     listenForApproval();
             closePaywall();
             alert("Payment Verified! Pro Edition Unlocked.");
@@ -281,6 +320,7 @@
 
       renderHistory();
       updateUI();
+      syncDataToCloud();
     }
 
     function updateUI() {
@@ -321,6 +361,7 @@
       totalPnl = 0;
       renderHistory();
       updateUI();
+      syncDataToCloud();
       alert("Tracker data reset.");
     }
 
