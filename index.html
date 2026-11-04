@@ -1,301 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Dragon Tiger Tracker</title>
-  <link rel="manifest" href="/dragon-tiger-tracker/manifest.json" />
-  <meta name="theme-color" content="#121212" />
-  <script src="https://telegram.org/js/telegram-web-app.js">  function checkPasscode() {
-    const code = document.getElementById("passcodeInput").value.trim();
-    if (code.trim() === "Reddy") {
-      localStorage.setItem("dt_pro_unlocked", "true");
-      isPro = true;
-      const badge = document.getElementById("modeBadge");
-      if (badge) {
-        badge.innerText = "PRO EDITION";
-        badge.className = "badge pro-active";
-      }
-      if (typeof updateSuggestion === "function") updateSuggestion();
-      closePaywall();
-      alert("Pro Edition successfully activated!");
-    } else {
-      alert("Invalid activation code. Please check with Mohan.");
-    }
-  }
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dragon Tiger Card Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #121212; color: #fff; padding: 16px 16px 80px 16px; display: flex; justify-content: center; }
-    .app-container { width: 100%; max-width: 420px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #ff9800; background: #221a0f; color: #ff9800; }
-    .badge.pro-active { background: #ff9800; color: #000; }
-    .stat-card { background: #1c1c1e; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .stat-val { font-size: 18px; font-weight: bold; margin-top: 4px; }
-    .pnl-pos { color: #4cd964; }
-    .pnl-neg { color: #ff3b30; }
-    .section-title { font-size: 13px; color: #8e8e93; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
-    .btn-group { display: flex; gap: 10px; margin-bottom: 16px; }
-    .btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: #888; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; }
-    .btn.active-red { border-color: #ff3b30; color: #ff3b30; background: rgba(255, 59, 48, 0.1); }
-    .btn.active-black { border-color: #fff; color: #fff; background: rgba(255, 255, 255, 0.15); }
-    .btn.active-target { border-color: #ff3b30; background: #ff3b30; color: #fff; }
-    .suggestion-box { background: #1c1c1e; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
-    .suggestion-text { font-size: 22px; font-weight: 800; color: #ff3b30; margin-top: 4px; letter-spacing: 1px; }
-    .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 24px; background: #e63946; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
-    .submit-btn:active { opacity: 0.8; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .history-card { background: #1c1c1e; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .history-main { font-size: 14px; font-weight: bold; }
-    .history-sub { font-size: 12px; color: #8e8e93; margin-top: 4px; }
-    .clear-btn { background: none; border: none; color: #ff3b30; font-size: 13px; font-weight: bold; cursor: pointer; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-    .grid-box { background: #1c1c1e; padding: 16px; border-radius: 12px; text-align: center; }
-    .grid-label { font-size: 12px; color: #8e8e93; margin-bottom: 6px; }
-    .grid-num { font-size: 20px; font-weight: bold; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 900; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #8e8e93; cursor: pointer; background: none; border: none; }
-    .nav-item.active { color: #fff; }
-    .nav-pill { padding: 4px 16px; border-radius: 16px; margin-bottom: 4px; font-size: 16px; }
-    .nav-item.active .nav-pill { background: #3a1d1d; color: #ff3b30; }
-    .paywall-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.88); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
-    .paywall-card { background: #1c1c1e; border: 1px solid #ff9800; border-radius: 16px; padding: 22px; width: 100%; max-width: 360px; text-align: center; position: relative; }
-    .close-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; color: #ff9800; font-size: 20px; cursor: pointer; }
-    .paywall-title { font-size: 18px; font-weight: 800; color: #ff9800; margin-bottom: 6px; }
-    .paywall-subtitle { font-size: 13px; color: #ccc; margin-bottom: 14px; }
-    .qr-container { background: #fff; padding: 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; }
-    .qr-container img { width: 160px; height: 160px; display: block; }
-    .upi-info { font-size: 14px; color: #ff9800; font-weight: bold; margin-bottom: 12px; }
-    .pay-link-btn { display: block; width: 100%; padding: 12px; background: #ff3b30; color: #fff; text-decoration: none; font-weight: bold; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
-    .utr-input { width: 100%; padding: 12px; background: #2a2a2e; border: 1px solid #555; color: #fff; border-radius: 6px; margin-bottom: 8px; text-align: center; font-size: 14px; }
-    .verify-btn { width: 100%; padding: 12px; background: #4cd964; border: none; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    body { background-color: #0d0f12; color: #ffffff; padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .title-box h1 { font-size: 18px; font-weight: 800; color: #e50914; letter-spacing: 1px; }
+    .title-box p { font-size: 11px; color: #888; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .badge.normal { background: #262930; color: #ff9800; border: 1px solid #ff9800; }
+    .badge.pro-active { background: #ff9800; color: #000; border: none; }
+    .dashboard { width: 100%; max-width: 400px; background: #161920; border-radius: 12px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #262930; }
+    .stat-card { background: #1f232d; border-radius: 8px; padding: 10px; text-align: center; }
+    .stat-label { font-size: 10px; color: #888; margin-bottom: 4px; }
+    .stat-val { font-size: 14px; font-weight: 700; }
+    .val-green { color: #00e676; }
+    .prediction-box { width: 100%; max-width: 400px; background: #161920; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px; border: 1px solid #262930; }
+    .pred-title { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .pred-result { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #ffeb3b; }
+    .actions-grid { width: 100%; max-width: 400px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .btn { border: none; border-radius: 10px; padding: 14px 0; font-size: 15px; font-weight: 800; cursor: pointer; color: #fff; }
+    .btn-dragon { background: #e50914; }
+    .btn-tiger { background: #ff9800; }
+    .btn-tie { width: 100%; max-width: 400px; background: #00e676; margin-bottom: 20px; }
+    .btn-reset { width: 100%; max-width: 400px; background: transparent; border: 1px solid #333; color: #777; font-size: 12px; padding: 8px; border-radius: 6px; cursor: pointer; }
+    
+    /* Paywall Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .modal-content { background: #161920; border-radius: 16px; padding: 20px; width: 100%; max-width: 360px; text-align: center; position: relative; border: 1px solid #ff9800; }
+    .modal-close { position: absolute; top: 12px; right: 14px; font-size: 20px; color: #ff9800; cursor: pointer; }
+    .qr-box { margin: 12px auto; width: 170px; height: 170px; background: #fff; padding: 6px; border-radius: 8px; }
+    .qr-box img { width: 100%; height: 100%; display: block; }
+    .pay-btn { display: block; width: 100%; background: #e50914; color: #fff; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+    .input-field { width: 100%; padding: 10px; background: #222631; border: 1px solid #333a4d; color: #fff; border-radius: 6px; margin-bottom: 10px; text-align: center; font-size: 13px; }
+    .submit-btn { width: 100%; padding: 12px; background: #00e676; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <div class="header">
-      <div>
-        <div style="font-size: 12px; color: #8e8e93;">WELCOME BACK,</div>
-        <h2 id="userName" style="font-size: 20px;">MOHAN</h2>
-      </div>
-      <button id="modeBadge" class="badge" onclick="onModeToggleClick()">NORMAL</button>
+
+  <div class="header">
+    <div class="title-box">
+      <p>WELCOME BACK</p>
+      <h1>MOHAN</h1>
+      <p>Dragon Tiger Colour Card Tracker</p>
     </div>
+    <div id="modeBadge" class="badge normal" onclick="openPaywall()">NORMAL</div>
+  </div>
 
-    <!-- TRACKER TAB -->
-    <div id="view-tracker" class="tab-content active">
-      <div style="font-size: 18px; font-weight: 800; color: #ff3b30; margin-bottom: 2px;">DRAGON TIGER</div>
-      <div style="font-size: 12px; color: #8e8e93; margin-bottom: 14px;">Colour Card Tracker</div>
-
-      <div class="stat-card">
-        <div>
-          <div style="font-size: 12px; color: #8e8e93;">Level: <span id="levelLabel">1 of 8</span></div>
-          <div class="stat-val" style="color: #ffb703;">Next Bet: ₹<span id="betAmount">10</span></div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 12px; color: #8e8e93;">Total P&L</div>
-          <div id="pnlLabel" class="stat-val pnl-pos">+₹0.00</div>
-        </div>
-      </div>
-
-      <div class="section-title">First Colour</div>
-      <div class="btn-group">
-        <div id="c1-red" class="btn active-red" onclick="setColor(1, 'RED')">● RED</div>
-        <div id="c1-black" class="btn" onclick="setColor(1, 'BLACK')">● BLACK</div>
-      </div>
-
-      <div class="section-title">Second Colour</div>
-      <div class="btn-group">
-        <div id="c2-red" class="btn active-red" onclick="setColor(2, 'RED')">● RED</div>
-        <div id="c2-black" class="btn" onclick="setColor(2, 'BLACK')">● BLACK</div>
-      </div>
-
-      <div class="suggestion-box">
-        <div style="font-size: 11px; color: #8e8e93; font-weight: 700;">RULE-BASED SUGGESTION</div>
-        <div id="suggestionText" class="suggestion-text">DRAGON</div>
-      </div>
-
-      <div class="section-title">Actual Result</div>
-      <div class="btn-group">
-        <div id="res-dragon" class="btn active-target" onclick="setActualResult('Dragon')">Dragon</div>
-        <div id="res-tiger" class="btn" onclick="setActualResult('Tiger')">Tiger</div>
-      </div>
-
-      <button class="submit-btn" onclick="saveEntry()">SAVE ENTRY</button>
+  <div class="dashboard">
+    <div class="stat-card">
+      <div class="stat-label">Level / Step</div>
+      <div id="statLevel" class="stat-val">Level 1 of 8</div>
     </div>
-
-    <!-- HISTORY TAB -->
-    <div id="view-history" class="tab-content">
-      <div class="history-header">
-        <div style="font-size: 18px; font-weight: bold;">Game history</div>
-        <button class="clear-btn" onclick="clearHistory()">Clear all</button>
-      </div>
-      <div id="historyList"></div>
+    <div class="stat-card">
+      <div class="stat-label">Total P&L</div>
+      <div id="statPnl" class="stat-val val-green">₹0.00</div>
     </div>
-
-    <!-- STATS TAB -->
-    <div id="view-stats" class="tab-content">
-      <div style="font-size: 18px; font-weight: bold; margin-bottom: 14px;">Performance Stats</div>
-      <div class="stats-grid">
-        <div class="grid-box">
-          <div class="grid-label">Total Rounds</div>
-          <div id="statTotal" class="grid-num">0</div>
-        </div>
-        <div class="grid-box">
-          <div class="grid-label">Win Rate</div>
-          <div id="statRate" class="grid-num" style="color: #4cd964;">0%</div>
-        </div>
-        <div class="grid-box">
-          <div class="grid-label">Wins</div>
-          <div id="statWins" class="grid-num" style="color: #4cd964;">0</div>
-        </div>
-        <div class="grid-box">
-          <div class="grid-label">Losses</div>
-          <div id="statLosses" class="grid-num" style="color: #ff3b30;">0</div>
-        </div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-label">Next Bet</div>
+      <div id="statBet" class="stat-val">₹10</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Recommendation</div>
+      <div id="statSignal" class="stat-val" style="color:#ff9800;">WAIT</div>
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
-  <div class="bottom-nav">
-    <button class="nav-item active" id="nav-tracker" onclick="switchTab('tracker')">
-      <div class="nav-pill">🎯</div>
-      Tracker
-    </button>
-    <button class="nav-item" id="nav-history" onclick="switchTab('history')">
-      <div class="nav-pill">📜</div>
-      History
-    </button>
-    <button class="nav-item" id="nav-stats" onclick="switchTab('stats')">
-      <div class="nav-pill">📊</div>
-      Stats
-    </button>
+  <div class="prediction-box">
+    <div class="pred-title">AI PATTERN PREDICTION</div>
+    <div id="predResult" class="pred-result">DRAGON</div>
   </div>
 
-  <!-- PAYWALL MODAL -->
-  <div id="paywall" class="paywall-overlay">
-    <div class="paywall-card">
-      <button class="close-btn" onclick="closePaywall()">✕</button>
-      <div class="paywall-title">UPGRADE TO PRO EDITION</div>
-      <div class="paywall-subtitle">Pay ₹299 for Pro Table &amp; 10 Levels Backup</div>
-      <div class="qr-container">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=konala@superyes%26pn=Mohan%26am=299.00%26cu=INR%26tn=DT%20Pro" alt="UPI QR" />
+  <div class="actions-grid">
+    <button class="btn btn-dragon" onclick="recordGame('DRAGON')">DRAGON</button>
+    <button class="btn btn-tiger" onclick="recordGame('TIGER')">TIGER</button>
+  </div>
+  <button class="btn btn-tie" onclick="recordGame('TIE')">TIE</button>
+  <button class="btn-reset" onclick="resetTracker()">RESET DATA</button>
+
+  <!-- Modal -->
+  <div id="paywallModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-close" onclick="closePaywall()">✕</div>
+      <h3 style="color:#ff9800;font-size:15px;margin-bottom:4px;">UPGRADE TO PRO EDITION</h3>
+      <p style="font-size:11px;color:#aaa;margin-bottom:10px;">Pay ₹299 for Pro Table & 10 Levels Backup</p>
+      <div class="qr-box">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=konala@superyes%26pn=Mohan%26am=299%26cu=INR" alt="QR Code">
       </div>
-      <div class="upi-info">UPI: konala@superyes</div>
-      <a href="upi://pay?pa=konala@superyes&pn=Mohan&am=299.00&cu=INR&tn=DT%20Pro" class="pay-link-btn">PAY ₹299 (OPEN UPI APP)</a>
-      
-      <div style="margin-top: 10px;">
-        <input type="number" id="utrInput" class="utr-input" placeholder="Enter 12-digit UTR Number" />
-        <button id="submitUtrBtn" class="verify-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
-      </div>
+      <p style="font-size:11px;color:#888;margin-bottom:10px;">UPI: konala@superyes</p>
+      <a class="pay-btn" href="upi://pay?pa=konala@superyes&pn=Mohan&am=299&cu=INR">PAY ₹299 (OPEN UPI APP)</a>
+      <input type="text" id="utrInput" class="input-field" placeholder="Enter 12-digit UTR or Activation Code">
+      <button id="submitBtn" class="submit-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
     </div>
   </div>
 
   <script>
-    const ADMIN_CHAT_ID = "7471483619"; 
-    const BOT_TOKEN = "9214949604:AAHfN-q4KpDl6sSyNlWac5HBTNYyw15ksBA";
-
     if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        document.getElementById('userName').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
-      }
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
     }
 
-    const levels = [10, 20, 50, 100, 200, 400, 800, 1650];
-    let currentLevel = 0, totalPnl = 0, isPro = false, c1 = 'RED', c2 = 'RED', actualResult = 'Dragon';
-    let historyData = JSON.parse(localStorage.getItem('dt_history') || '[]');
+    const BOT_TOKEN = "9214949604:AAHfN-q4KpDl6sSyNlWac5HBTNYyw15ksBA";
+    const ADMIN_CHAT_ID = "7471483619";
 
-    function calculateSuggestion() {
-      if (!isPro) {
-        if (c1 === 'RED' && c2 === 'RED') return 'DRAGON';
-        if (c1 === 'RED' && c2 === 'BLACK') return 'DRAGON';
-        if (c1 === 'BLACK' && c2 === 'BLACK') return 'TIGER';
-        if (c1 === 'BLACK' && c2 === 'RED') return 'DRAGON';
-      } else {
-        if (c1 === 'RED' && c2 === 'BLACK') return 'DRAGON';
-        if (c1 === 'RED' && c2 === 'RED') return 'DRAGON';
-        if (c1 === 'BLACK' && c2 === 'RED') return 'TIGER';
-        if (c1 === 'BLACK' && c2 === 'BLACK') return 'TIGER';
-      }
-      return 'DRAGON';
-    }
+    let history = [];
+    let currentLevel = 1;
+    let totalPnl = 0;
+    let isPro = localStorage.getItem("dt_pro_unlocked") === "true";
 
-    function updateSuggestion() {
-      document.getElementById('suggestionText').innerText = calculateSuggestion();
-    }
+    const betsNormal = [10, 20, 40, 80, 160, 320, 640, 1280];
+    const betsPro = [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120];
 
-    function onModeToggleClick() {
-      if (!localStorage.getItem('dt_pro_unlocked')) {
-        document.getElementById('paywall').style.display = 'flex';
-      } else {
-        isPro = !isPro;
-        const badge = document.getElementById('modeBadge');
-        badge.innerText = isPro ? 'PRO EDITION' : 'NORMAL';
-        badge.className = isPro ? 'badge pro-active' : 'badge';
-        updateSuggestion();
-      }
-    }
-
-    function closePaywall() {
-      document.getElementById('paywall').style.display = 'none';
-    }
-
-    async function verifyUTR() {
-      const utr = (document.getElementById("utrInput").value || "").trim();
-
-      if (!utr) {
-        alert("Please enter your 12-digit UTR number.");
-        return;
-      }
-
-      // 1. Instant passcode unlock check (No network required)
-      if (utr.toLowerCase() === "reddy" || utr.toLowerCase() === "mohan") {
-        localStorage.setItem("dt_pro_unlocked", "true");
-        isPro = true;
+    function applyProStatus() {
+      if (isPro) {
         const badge = document.getElementById("modeBadge");
         if (badge) {
           badge.innerText = "PRO EDITION";
           badge.className = "badge pro-active";
         }
-        if (typeof updateSuggestion === "function") updateSuggestion();
+      }
+      updateUI();
+    }
+
+    function recordGame(result) {
+      history.push(result);
+      if (history.length > 50) history.shift();
+
+      const lastPred = document.getElementById("predResult").innerText;
+      const currentBets = isPro ? betsPro : betsNormal;
+      const betAmount = currentBets[currentLevel - 1] || currentBets[0];
+
+      if (result !== "TIE") {
+        if (result === lastPred) {
+          totalPnl += betAmount;
+          currentLevel = 1;
+        } else {
+          totalPnl -= betAmount;
+          currentLevel = (currentLevel >= currentBets.length) ? 1 : currentLevel + 1;
+        }
+      }
+
+      updateUI();
+    }
+
+    function updateUI() {
+      const currentBets = isPro ? betsPro : betsNormal;
+      const maxLevels = currentBets.length;
+      
+      document.getElementById("statLevel").innerText = `Level ${currentLevel} of ${maxLevels}`;
+      document.getElementById("statBet").innerText = `₹${currentBets[currentLevel - 1] || currentBets[0]}`;
+      
+      const pnlEl = document.getElementById("statPnl");
+      pnlEl.innerText = `${totalPnl >= 0 ? "+" : ""}₹${totalPnl.toFixed(2)}`;
+      pnlEl.className = totalPnl >= 0 ? "stat-val val-green" : "stat-val";
+      if (totalPnl < 0) pnlEl.style.color = "#e50914";
+
+      // Prediction algorithm
+      let nextPred = "DRAGON";
+      if (history.length > 0) {
+        const dCount = history.filter(x => x === "DRAGON").length;
+        const tCount = history.filter(x => x === "TIGER").length;
+        nextPred = dCount > tCount ? "TIGER" : "DRAGON";
+      }
+      document.getElementById("predResult").innerText = nextPred;
+      document.getElementById("statSignal").innerText = "BET NOW";
+    }
+
+    function resetTracker() {
+      history = [];
+      currentLevel = 1;
+      totalPnl = 0;
+      updateUI();
+    }
+
+    function openPaywall() {
+      if (isPro) {
+        alert("You are already on PRO EDITION!");
+        return;
+      }
+      document.getElementById("paywallModal").style.display = "flex";
+    }
+
+    function closePaywall() {
+      document.getElementById("paywallModal").style.display = "none";
+    }
+
+    async function verifyUTR() {
+      const input = (document.getElementById("utrInput").value || "").trim();
+
+      if (!input) {
+        alert("Please enter your UTR number or secret key.");
+        return;
+      }
+
+      // 1. Secret key unlocks directly
+      if (input.toLowerCase() === "reddy" || input.toLowerCase() === "mohan") {
+        localStorage.setItem("dt_pro_unlocked", "true");
+        isPro = true;
+        applyProStatus();
         closePaywall();
         alert("Pro Edition successfully unlocked!");
         return;
       }
 
-      if (utr.length < 8) {
-        alert("Please enter a valid UTR number.");
+      if (input.length < 8) {
+        alert("Please enter a valid 12-digit UTR.");
         return;
       }
 
-      const submitBtn = document.querySelector("#paywallModal button:last-of-type") || document.querySelector("button[onclick="verifyUTR()"]");
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Submitting...";
-      }
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting...";
 
       let tgUser = "Unknown (Browser Session)";
       let tgId = "Browser Session";
 
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
         const u = window.Telegram.WebApp.initDataUnsafe.user;
-        tgUser = (u.first_name || "") + " " + (u.last_name || "");
+        tgUser = (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
         if (u.username) tgUser += " (@" + u.username + ")";
         tgId = u.id;
       }
 
-      const text = "💰 *NEW PAYMENT RECEIVED*\n\n" +
-                   "👤 *User:* " + tgUser + "\n" +
-                   "🆔 *Telegram ID:* " + tgId + "\n" +
-                   "🔢 *UTR Number:* " + utr + "\n" +
-                   "💵 *Amount:* ₹299\n\n" +
-                   "Please check your PhonePe/GPay app to verify.";
+      const text = `💰 NEW PAYMENT RECEIVED\n\n👤 User: ${tgUser}\n🆔 Telegram ID: ${tgId}\n🔢 UTR Number: ${input}\n💵 Amount: ₹299\n\nPlease check your PhonePe/GPay app to verify.`;
 
       const replyMarkup = {
         inline_keyboard: [
@@ -307,151 +239,32 @@
       };
 
       try {
-        const res = await fetch("https://api.telegram.org/bot9214949604:AAHfN-q4KpDl6sSyNlWac5HBTNYyw15ksBA/sendMessage", {
+        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            chat_id: "7471483619",
+            chat_id: ADMIN_CHAT_ID,
             text: text,
-            parse_mode: "Markdown",
             reply_markup: replyMarkup
           })
         });
 
         const data = await res.json();
         if (data.ok) {
-          alert("UTR submitted successfully! Once verified, enter code Reddy to unlock Pro.");
+          alert("UTR submitted! Once verified, enter code Reddy into this box to unlock.");
           closePaywall();
         } else {
-          console.error(data);
-          alert("Submission error: " + (data.description || "Check connection"));
+          alert("Submission error: " + (data.description || "Try again"));
         }
       } catch (err) {
-        console.error(err);
         alert("Network error. Please try again.");
       } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerText = "SUBMIT UTR TO UNLOCK";
-        }
+        submitBtn.disabled = false;
+        submitBtn.innerText = "SUBMIT UTR TO UNLOCK";
       }
     }
 
-    function setColor(slot, color) {
-      if (slot === 1) {
-        c1 = color;
-        document.getElementById('c1-red').className = color === 'RED' ? 'btn active-red' : 'btn';
-        document.getElementById('c1-black').className = color === 'BLACK' ? 'btn active-black' : 'btn';
-      } else {
-        c2 = color;
-        document.getElementById('c2-red').className = color === 'RED' ? 'btn active-red' : 'btn';
-        document.getElementById('c2-black').className = color === 'BLACK' ? 'btn active-black' : 'btn';
-      }
-      updateSuggestion();
-    }
-
-    function setActualResult(res) {
-      actualResult = res;
-      document.getElementById('res-dragon').className = res === 'Dragon' ? 'btn active-target' : 'btn';
-      document.getElementById('res-tiger').className = res === 'Tiger' ? 'btn active-target' : 'btn';
-    }
-
-    function saveEntry() {
-      const predicted = calculateSuggestion();
-      const bet = levels[currentLevel];
-      const isWin = (predicted.toUpperCase() === actualResult.toUpperCase());
-      const levelPlayed = currentLevel + 1;
-      
-      let pnlChange = isWin ? (bet * 0.95) : -bet;
-      totalPnl += pnlChange;
-      currentLevel = isWin ? 0 : Math.min(currentLevel + 1, levels.length - 1);
-
-      historyData.unshift({
-        lvl: levelPlayed,
-        bet: bet,
-        target: predicted,
-        c1: c1,
-        c2: c2,
-        result: actualResult,
-        pnl: pnlChange,
-        isWin: isWin
-      });
-      localStorage.setItem('dt_history', JSON.stringify(historyData));
-
-      document.getElementById('levelLabel').innerText = `${currentLevel + 1} of ${levels.length}`;
-      document.getElementById('betAmount').innerText = levels[currentLevel];
-      const pnlEl = document.getElementById('pnlLabel');
-      pnlEl.innerText = `${totalPnl >= 0 ? '+' : '-'}₹${Math.abs(totalPnl).toFixed(2)}`;
-      pnlEl.className = `stat-val ${totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}`;
-
-      renderHistory();
-      renderStats();
-    }
-
-    function renderHistory() {
-      const list = document.getElementById('historyList');
-      if (historyData.length === 0) {
-        list.innerHTML = '<div style="text-align:center;color:#555;margin-top:40px;">No entries yet</div>';
-        return;
-      }
-      list.innerHTML = historyData.map(item => `
-        <div class="history-card">
-          <div>
-            <div class="history-main">Lvl ${item.lvl} | ₹${item.bet} on ${item.target}</div>
-            <div class="history-sub">Cards: ${item.c1}+${item.c2} → ${item.result}</div>
-          </div>
-          <div class="history-main ${item.isWin ? 'pnl-pos' : 'pnl-neg'}">
-            ${item.isWin ? '+' : ''}${item.pnl.toFixed(2)}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderStats() {
-      const total = historyData.length;
-      const wins = historyData.filter(h => h.isWin).length;
-      const losses = total - wins;
-      const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
-      document.getElementById('statTotal').innerText = total;
-      document.getElementById('statWins').innerText = wins;
-      document.getElementById('statLosses').innerText = losses;
-      document.getElementById('statRate').innerText = `${rate}%`;
-    }
-
-    function clearHistory() {
-      historyData = [];
-      localStorage.removeItem('dt_history');
-      totalPnl = 0;
-      currentLevel = 0;
-      document.getElementById('levelLabel').innerText = `1 of ${levels.length}`;
-      document.getElementById('betAmount').innerText = levels[0];
-      document.getElementById('pnlLabel').innerText = '+₹0.00';
-      document.getElementById('pnlLabel').className = 'stat-val pnl-pos';
-      renderHistory();
-      renderStats();
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(`view-${tab}`).classList.add('active');
-      document.getElementById(`nav-${tab}`).classList.add('active');
-      if (tab === 'history') renderHistory();
-      if (tab === 'stats') renderStats();
-    }
-
-    if (localStorage.getItem('dt_pro_unlocked')) {
-      isPro = true;
-      document.getElementById('modeBadge').innerText = 'PRO EDITION';
-      document.getElementById('modeBadge').className = 'badge pro-active';
-    }
-    updateSuggestion();
-    renderHistory();
-    renderStats();
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    applyProStatus();
   </script>
 </body>
 </html>
