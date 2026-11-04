@@ -2,20 +2,21 @@
   "name": "Dragon Tiger Tracker",
   "short_name": "DT Tracker",
   "description": "Professional Dragon Tiger game analysis, color tracking, and bankroll manager.",
-  "start_url": "index.html",
+  "start_url": "/dragon-tiger-tracker/",
+  "scope": "/dragon-tiger-tracker/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#121212",
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmRlc2NyaXB0aW9uAE1hZGUgd2l0aCBJbWFnZUNocm9tZQplMmFhMzBhYWY5ODIxZjNmZTA2MTQ2ODhhNDQyNDM4NWU2Nzk3NmEzCg5JdAgAAACWSURBVHja7cEBDQAAAMKg909tDwcUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOA1YAAAAQ==",
+      "src": "/dragon-tiger-tracker/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmRlc2NyaXB0aW9uAE1hZGUgd2l0aCBJbWFnZUNocm9tZQplMmFhMzBhYWY5ODIxZjNmZTA2MTQ2ODhhNDQyNDM4NWU2Nzk3NmEzCg5JdAgAAACWSURBVHja7cEBDQAAAMKg909tDwcUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOA1YAAAAQ==",
+      "src": "/dragon-tiger-tracker/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
