@@ -188,6 +188,34 @@
     let historyLog = [];
     let currentLevel = 1;
     let totalPnl = 0;
+    
+    const FIREBASE_URL = "https://dragon-tiger-tracker-438c4-default-rtdb.firebaseio.com";
+    let deviceId = localStorage.getItem("dt_device_uid");
+    if (!deviceId) {
+      deviceId = "USER_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      localStorage.setItem("dt_device_uid", deviceId);
+    }
+
+    // Auto-listen for remote unlock approval
+    function listenForApproval() {
+      if (isPro) return;
+      const sse = new EventSource(`${FIREBASE_URL}/activations/${deviceId}/status.json`);
+      sse.onmessage = function(event) {
+        try {
+          const val = JSON.parse(event.data);
+          if (val === "APPROVED") {
+            localStorage.setItem("dt_pro_unlocked", "true");
+            isPro = true;
+            applyProStatus();
+    listenForApproval();
+            closePaywall();
+            alert("Payment Verified! Pro Edition Unlocked.");
+            sse.close();
+          }
+        } catch(e) {}
+      };
+    }
+
     let isPro = localStorage.getItem("dt_pro_unlocked") === "true";
 
     const betsNormal = [10, 20, 40, 80, 160, 320, 640, 1280];
@@ -325,7 +353,7 @@
         return;
       }
 
-      // 1. Direct Unlock via Passcode
+      // Offline Master Passcode bypass
       if (codeOrUtr.toLowerCase() === "reddy" || codeOrUtr.toLowerCase() === "mohan") {
         localStorage.setItem("dt_pro_unlocked", "true");
         isPro = true;
@@ -344,27 +372,41 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Submitting...";
 
-      const msg = `💰 NEW PAYMENT RECEIVED\n\n👤 User: Standalone App User\n🔢 UTR Number: ${codeOrUtr}\n💵 Amount: ₹299\n\nVerify in PhonePe/GPay. If confirmed, tell the user to enter passcode: Reddy`;
+      // 1. Post pending activation to Firebase
+      try {
+        await fetch(`${FIREBASE_URL}/activations/${deviceId}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            utr: codeOrUtr,
+            status: "PENDING",
+            time: new Date().toLocaleTimeString()
+          })
+        });
+      } catch(err) {
+        console.error("Firebase error:", err);
+      }
+
+      // 2. Alert your Telegram with the device ID
+      const text = "💰 *NEW PAYMENT RECEIVED*\n\n" +
+                   "🆔 *Device ID:* `" + deviceId + "`\n" +
+                   "🔢 *UTR Number:* `" + codeOrUtr + "`\n" +
+                   "💵 *Amount:* ₹299\n\n" +
+                   "To auto-unlock: Open Firebase Realtime Database and change status from PENDING to APPROVED.";
 
       try {
-        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chat_id: ADMIN_CHAT_ID,
-            text: msg
+            text: text,
+            parse_mode: "Markdown"
           })
         });
-
-        const data = await res.json();
-        if (data.ok) {
-          alert("UTR submitted successfully! Once Mohan verifies your payment, enter code Reddy in this box to unlock Pro.");
-          closePaywall();
-        } else {
-          alert("Submission error: " + (data.description || "Try again"));
-        }
-      } catch (err) {
-        alert("Network error. Please check your internet connection.");
+        alert("UTR submitted! Keep the app open — it will unlock automatically once verified.");
+      } catch(e) {
+        alert("Submitted to database! Waiting for approval.");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "SUBMIT / ACTIVATE";
