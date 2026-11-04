@@ -3,112 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Dragon Tiger Card Tracker</title>
-  <link rel="manifest" href="manifest.json">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Dragon Tiger Colour Card Tracker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0d0f12; color: #ffffff; padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .title-box h1 { font-size: 18px; font-weight: 800; color: #e50914; letter-spacing: 1px; }
-    .title-box p { font-size: 11px; color: #888; }
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
-    .badge.normal { background: #262930; color: #ff9800; border: 1px solid #ff9800; }
-    .badge.pro-active { background: #ff9800; color: #000; border: none; }
-    .dashboard { width: 100%; max-width: 400px; background: #161920; border-radius: 12px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #262930; }
-    .stat-card { background: #1f232d; border-radius: 8px; padding: 10px; text-align: center; }
-    .stat-label { font-size: 10px; color: #888; margin-bottom: 4px; }
-    .stat-val { font-size: 14px; font-weight: 700; }
-    .val-green { color: #00e676; }
-    .prediction-box { width: 100%; max-width: 400px; background: #161920; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px; border: 1px solid #262930; }
-    .pred-title { font-size: 12px; color: #888; margin-bottom: 8px; }
-    .pred-result { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #ffeb3b; }
-    .actions-grid { width: 100%; max-width: 400px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .btn { border: none; border-radius: 10px; padding: 14px 0; font-size: 15px; font-weight: 800; cursor: pointer; color: #fff; }
-    .btn-dragon { background: #e50914; }
-    .btn-tiger { background: #ff9800; }
-    .btn-tie { width: 100%; max-width: 400px; background: #00e676; margin-bottom: 20px; }
-    .btn-reset { width: 100%; max-width: 400px; background: transparent; border: 1px solid #333; color: #777; font-size: 12px; padding: 8px; border-radius: 6px; cursor: pointer; }
+    body { background-color: #121316; color: #ffffff; padding: 16px 16px 80px 16px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
     
+    .container { width: 100%; max-width: 400px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .welcome-text { font-size: 10px; color: #8e8e93; letter-spacing: 0.5px; text-transform: uppercase; }
+    .user-name { font-size: 18px; font-weight: 800; color: #ff3b30; margin-top: 2px; }
+    .app-subtitle { font-size: 11px; color: #8e8e93; margin-top: 4px; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; border: 1px solid #ff9500; color: #ff9500; cursor: pointer; text-transform: uppercase; }
+    .badge.pro-active { background: #ff9500; color: #000; border: none; }
+
+    .summary-card { background: #1a1c23; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid #242834; }
+    .summary-col p { font-size: 11px; color: #8e8e93; margin-bottom: 4px; }
+    .summary-col h3 { font-size: 18px; font-weight: 800; color: #ff9500; }
+    .summary-col h3.pnl { color: #34c759; }
+
+    .section-label { font-size: 10px; font-weight: 700; color: #8e8e93; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .selector-btn { background: #1a1c23; border: 1px solid #262a38; border-radius: 8px; padding: 12px 0; font-size: 12px; font-weight: 700; color: #8e8e93; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff3b30; }
+    .dot-black { background: #8e8e93; }
+    .selector-btn.active-red { border-color: #ff3b30; color: #ff3b30; background: rgba(255, 59, 48, 0.08); }
+    .selector-btn.active-black { border-color: #ffffff; color: #ffffff; background: rgba(255, 255, 255, 0.08); }
+
+    .suggestion-box { background: #1a1c23; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #242834; }
+    .suggestion-title { font-size: 10px; font-weight: 700; color: #8e8e93; text-transform: uppercase; margin-bottom: 6px; }
+    .suggestion-val { font-size: 20px; font-weight: 900; color: #ff3b30; letter-spacing: 1px; }
+
+    .actual-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .actual-btn { border: none; border-radius: 8px; padding: 12px 0; font-size: 14px; font-weight: 800; cursor: pointer; color: #8e8e93; background: #1a1c23; border: 1px solid #262a38; }
+    .actual-btn.active-dragon { background: #ff3b30; color: #fff; border-color: #ff3b30; }
+    .actual-btn.active-tiger { background: #ff9500; color: #fff; border-color: #ff9500; }
+
+    .save-btn { width: 100%; background: #ff3b30; color: #ffffff; border: none; border-radius: 24px; padding: 14px 0; font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.25); }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #14161d; border-top: 1px solid #202430; display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #636878; font-size: 10px; cursor: pointer; text-decoration: none; }
+    .nav-item.active { color: #ff3b30; }
+    .nav-icon { font-size: 16px; margin-bottom: 2px; }
+
+    /* Pages */
+    .page { display: none; }
+    .page.active { display: block; }
+
     /* Paywall Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
-    .modal-content { background: #161920; border-radius: 16px; padding: 20px; width: 100%; max-width: 360px; text-align: center; position: relative; border: 1px solid #ff9800; }
-    .modal-close { position: absolute; top: 12px; right: 14px; font-size: 20px; color: #ff9800; cursor: pointer; }
-    .qr-box { margin: 12px auto; width: 170px; height: 170px; background: #fff; padding: 6px; border-radius: 8px; }
-    .qr-box img { width: 100%; height: 100%; display: block; }
-    .pay-btn { display: block; width: 100%; background: #e50914; color: #fff; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
-    .input-field { width: 100%; padding: 10px; background: #222631; border: 1px solid #333a4d; color: #fff; border-radius: 6px; margin-bottom: 10px; text-align: center; font-size: 13px; }
-    .submit-btn { width: 100%; padding: 12px; background: #00e676; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: #1a1c23; border: 1px solid #ff9500; border-radius: 16px; max-width: 360px; width: 100%; padding: 20px; text-align: center; position: relative; }
+    .modal-close { position: absolute; top: 12px; right: 14px; font-size: 20px; color: #ff9500; cursor: pointer; }
+    .qr-img { width: 150px; height: 150px; border-radius: 8px; margin: 12px auto; display: block; background: #fff; padding: 4px; }
+    .pay-link { display: block; width: 100%; background: #ff3b30; color: #fff; text-decoration: none; padding: 12px; font-weight: 800; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+    .field { width: 100%; padding: 12px; background: #232733; border: 1px solid #3a3a3c; color: #fff; border-radius: 8px; margin-bottom: 10px; font-size: 14px; text-align: center; }
+    .submit-btn { width: 100%; padding: 14px; background: #34c759; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; color: #000; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="title-box">
-      <p>WELCOME BACK</p>
-      <h1>MOHAN</h1>
-      <p>Dragon Tiger Colour Card Tracker</p>
-    </div>
-    <div id="modeBadge" class="badge normal" onclick="openPaywall()">NORMAL</div>
-  </div>
-
-  <div class="dashboard">
-    <div class="stat-card">
-      <div class="stat-label">Level / Step</div>
-      <div id="statLevel" class="stat-val">Level 1 of 8</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total P&L</div>
-      <div id="statPnl" class="stat-val val-green">₹0.00</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Next Bet</div>
-      <div id="statBet" class="stat-val">₹10</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Recommendation</div>
-      <div id="statSignal" class="stat-val" style="color:#ff9800;">WAIT</div>
-    </div>
-  </div>
-
-  <div class="prediction-box">
-    <div class="pred-title">AI PATTERN PREDICTION</div>
-    <div id="predResult" class="pred-result">DRAGON</div>
-  </div>
-
-  <div class="actions-grid">
-    <button class="btn btn-dragon" onclick="recordGame('DRAGON')">DRAGON</button>
-    <button class="btn btn-tiger" onclick="recordGame('TIGER')">TIGER</button>
-  </div>
-  <button class="btn btn-tie" onclick="recordGame('TIE')">TIE</button>
-  <button class="btn-reset" onclick="resetTracker()">RESET DATA</button>
-
-  <!-- Modal -->
-  <div id="paywallModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-close" onclick="closePaywall()">✕</div>
-      <h3 style="color:#ff9800;font-size:15px;margin-bottom:4px;">UPGRADE TO PRO EDITION</h3>
-      <p style="font-size:11px;color:#aaa;margin-bottom:10px;">Pay ₹299 for Pro Table & 10 Levels Backup</p>
-      <div class="qr-box">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=konala@superyes%26pn=Mohan%26am=299%26cu=INR" alt="QR Code">
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <p class="welcome-text">WELCOME BACK,</p>
+        <h1 class="user-name">MOHAN</h1>
+        <p class="app-subtitle">Dragon Tiger Colour Card Tracker</p>
       </div>
-      <p style="font-size:11px;color:#888;margin-bottom:10px;">UPI: konala@superyes</p>
-      <a class="pay-btn" href="upi://pay?pa=konala@superyes&pn=Mohan&am=299&cu=INR">PAY ₹299 (OPEN UPI APP)</a>
-      <input type="text" id="utrInput" class="input-field" placeholder="Enter 12-digit UTR or Activation Code">
-      <button id="submitBtn" class="submit-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
+      <div id="modeBadge" class="badge" onclick="openPaywall()">NORMAL</div>
+    </div>
+
+    <!-- Tracker View -->
+    <div id="pageTracker" class="page active">
+      <div class="summary-card">
+        <div class="summary-col">
+          <p id="levelLabel">Level: 1 of 8</p>
+          <h3 id="betLabel">Next Bet: ₹10</h3>
+        </div>
+        <div class="summary-col" style="text-align: right;">
+          <p>Total P&L</p>
+          <h3 id="pnlLabel" class="pnl">+₹0.00</h3>
+        </div>
+      </div>
+
+      <!-- First Colour -->
+      <div class="section-label">FIRST COLOUR</div>
+      <div class="btn-group">
+        <button id="btnFirstRed" class="selector-btn active-red" onclick="selectFirst('RED')">
+          <span class="dot dot-red"></span> RED
+        </button>
+        <button id="btnFirstBlack" class="selector-btn" onclick="selectFirst('BLACK')">
+          <span class="dot dot-black"></span> BLACK
+        </button>
+      </div>
+
+      <!-- Second Colour -->
+      <div class="section-label">SECOND COLOUR</div>
+      <div class="btn-group">
+        <button id="btnSecondRed" class="selector-btn active-red" onclick="selectSecond('RED')">
+          <span class="dot dot-red"></span> RED
+        </button>
+        <button id="btnSecondBlack" class="selector-btn" onclick="selectSecond('BLACK')">
+          <span class="dot dot-black"></span> BLACK
+        </button>
+      </div>
+
+      <!-- Rule-Based Suggestion -->
+      <div class="suggestion-box">
+        <div class="suggestion-title">RULE-BASED SUGGESTION</div>
+        <div id="suggestionResult" class="suggestion-val">DRAGON</div>
+      </div>
+
+      <!-- Actual Result -->
+      <div class="section-label">ACTUAL RESULT</div>
+      <div class="actual-group">
+        <button id="btnActualDragon" class="actual-btn active-dragon" onclick="selectActual('DRAGON')">Dragon</button>
+        <button id="btnActualTiger" class="actual-btn" onclick="selectActual('TIGER')">Tiger</button>
+      </div>
+
+      <button class="save-btn" onclick="saveEntry()">SAVE ENTRY</button>
+    </div>
+
+    <!-- History View -->
+    <div id="pageHistory" class="page">
+      <div class="section-label">ENTRY HISTORY</div>
+      <div id="historyList" style="font-size: 13px; color: #8e8e93; line-height: 1.8;">No entries recorded yet.</div>
+    </div>
+
+    <!-- Stats View -->
+    <div id="pageStats" class="page">
+      <div class="section-label">PERFORMANCE STATS</div>
+      <div class="summary-card" style="display:block;">
+        <p style="font-size:12px;margin-bottom:8px;">Total Games: <b id="statTotal" style="color:#fff;">0</b></p>
+        <p style="font-size:12px;margin-bottom:8px;">Wins: <b id="statWins" style="color:#34c759;">0</b></p>
+        <p style="font-size:12px;">Win Rate: <b id="statRate" style="color:#ff9500;">0%</b></p>
+      </div>
+      <button class="selector-btn" style="width:100%;margin-top:14px;" onclick="resetStats()">RESET ALL DATA</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('Tracker')">
+      <div class="nav-icon">🎯</div>
+      <div>Tracker</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('History')">
+      <div class="nav-icon">📜</div>
+      <div>History</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('Stats')">
+      <div class="nav-icon">📊</div>
+      <div>Stats</div>
+    </div>
+  </div>
+
+  <!-- Paywall Modal -->
+  <div id="paywallModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-close" onclick="closePaywall()">✕</div>
+      <h3 style="color:#ff9500;margin-bottom:4px;font-size:16px;">UPGRADE TO PRO EDITION</h3>
+      <p style="color:#8e8e93;font-size:11px;margin-bottom:10px;">Pay ₹299 for Pro Table & 10 Levels Backup</p>
+      
+      <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=konala@superyes%26pn=Mohan%26am=299%26cu=INR" alt="UPI QR">
+      <p style="font-size:11px;color:#8e8e93;margin-bottom:10px;">UPI ID: konala@superyes</p>
+      
+      <a class="pay-link" href="upi://pay?pa=konala@superyes&pn=Mohan&am=299&cu=INR">OPEN UPI APP (PAY ₹299)</a>
+      
+      <input type="text" id="utrInput" class="field" placeholder="Enter 12-digit UTR or Passcode">
+      <button id="submitBtn" class="submit-btn" onclick="submitActivation()">SUBMIT / ACTIVATE</button>
     </div>
   </div>
 
   <script>
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-    }
-
     const BOT_TOKEN = "9214949604:AAHfN-q4KpDl6sSyNlWac5HBTNYyw15ksBA";
     const ADMIN_CHAT_ID = "7471483619";
 
-    let history = [];
+    let firstColour = "RED";
+    let secondColour = "RED";
+    let actualResult = "DRAGON";
+
+    let historyLog = [];
     let currentLevel = 1;
     let totalPnl = 0;
     let isPro = localStorage.getItem("dt_pro_unlocked") === "true";
@@ -117,70 +194,120 @@
     const betsPro = [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120];
 
     function applyProStatus() {
+      const badge = document.getElementById("modeBadge");
       if (isPro) {
-        const badge = document.getElementById("modeBadge");
-        if (badge) {
-          badge.innerText = "PRO EDITION";
-          badge.className = "badge pro-active";
-        }
+        badge.innerText = "PRO EDITION";
+        badge.className = "badge pro-active";
       }
       updateUI();
     }
 
-    function recordGame(result) {
-      history.push(result);
-      if (history.length > 50) history.shift();
+    function selectFirst(col) {
+      firstColour = col;
+      document.getElementById("btnFirstRed").className = col === "RED" ? "selector-btn active-red" : "selector-btn";
+      document.getElementById("btnFirstBlack").className = col === "BLACK" ? "selector-btn active-black" : "selector-btn";
+      calculateSuggestion();
+    }
 
-      const lastPred = document.getElementById("predResult").innerText;
-      const currentBets = isPro ? betsPro : betsNormal;
-      const betAmount = currentBets[currentLevel - 1] || currentBets[0];
+    function selectSecond(col) {
+      secondColour = col;
+      document.getElementById("btnSecondRed").className = col === "RED" ? "selector-btn active-red" : "selector-btn";
+      document.getElementById("btnSecondBlack").className = col === "BLACK" ? "selector-btn active-black" : "selector-btn";
+      calculateSuggestion();
+    }
 
-      if (result !== "TIE") {
-        if (result === lastPred) {
-          totalPnl += betAmount;
-          currentLevel = 1;
-        } else {
-          totalPnl -= betAmount;
-          currentLevel = (currentLevel >= currentBets.length) ? 1 : currentLevel + 1;
-        }
+    function selectActual(res) {
+      actualResult = res;
+      document.getElementById("btnActualDragon").className = res === "DRAGON" ? "actual-btn active-dragon" : "actual-btn";
+      document.getElementById("btnActualTiger").className = res === "TIGER" ? "actual-btn active-tiger" : "actual-btn";
+    }
+
+    function calculateSuggestion() {
+      // Dragon Tiger Colour Rule logic: Same Colour -> DRAGON, Opposite -> TIGER
+      const pred = (firstColour === secondColour) ? "DRAGON" : "TIGER";
+      document.getElementById("suggestionResult").innerText = pred;
+    }
+
+    function saveEntry() {
+      const suggested = document.getElementById("suggestionResult").innerText;
+      const bets = isPro ? betsPro : betsNormal;
+      const betAmt = bets[currentLevel - 1] || bets[0];
+
+      const won = (actualResult === suggested);
+      if (won) {
+        totalPnl += betAmt;
+        currentLevel = 1;
+      } else {
+        totalPnl -= betAmt;
+        currentLevel = (currentLevel >= bets.length) ? 1 : currentLevel + 1;
       }
 
+      historyLog.unshift({
+        firstColour,
+        secondColour,
+        suggested,
+        actualResult,
+        won,
+        betAmt
+      });
+
+      renderHistory();
       updateUI();
     }
 
     function updateUI() {
-      const currentBets = isPro ? betsPro : betsNormal;
-      const maxLevels = currentBets.length;
+      const bets = isPro ? betsPro : betsNormal;
+      document.getElementById("levelLabel").innerText = `Level: ${currentLevel} of ${bets.length}`;
+      document.getElementById("betLabel").innerText = `Next Bet: ₹${bets[currentLevel - 1] || bets[0]}`;
       
-      document.getElementById("statLevel").innerText = `Level ${currentLevel} of ${maxLevels}`;
-      document.getElementById("statBet").innerText = `₹${currentBets[currentLevel - 1] || currentBets[0]}`;
-      
-      const pnlEl = document.getElementById("statPnl");
+      const pnlEl = document.getElementById("pnlLabel");
       pnlEl.innerText = `${totalPnl >= 0 ? "+" : ""}₹${totalPnl.toFixed(2)}`;
-      pnlEl.className = totalPnl >= 0 ? "stat-val val-green" : "stat-val";
-      if (totalPnl < 0) pnlEl.style.color = "#e50914";
+      pnlEl.style.color = totalPnl >= 0 ? "#34c759" : "#ff3b30";
 
-      // Prediction algorithm
-      let nextPred = "DRAGON";
-      if (history.length > 0) {
-        const dCount = history.filter(x => x === "DRAGON").length;
-        const tCount = history.filter(x => x === "TIGER").length;
-        nextPred = dCount > tCount ? "TIGER" : "DRAGON";
-      }
-      document.getElementById("predResult").innerText = nextPred;
-      document.getElementById("statSignal").innerText = "BET NOW";
+      // Update Stats Tab
+      const total = historyLog.length;
+      const wins = historyLog.filter(x => x.won).length;
+      document.getElementById("statTotal").innerText = total;
+      document.getElementById("statWins").innerText = wins;
+      document.getElementById("statRate").innerText = total > 0 ? `${Math.round((wins / total) * 100)}%` : "0%";
     }
 
-    function resetTracker() {
-      history = [];
+    function renderHistory() {
+      if (historyLog.length === 0) {
+        document.getElementById("historyList").innerHTML = "No entries recorded yet.";
+        return;
+      }
+      let html = "";
+      historyLog.slice(0, 15).forEach((h, idx) => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid #232733;display:flex;justify-content:space-between;">
+          <span>#${historyLog.length - idx}: ${h.firstColour}/${h.secondColour} → ${h.suggested}</span>
+          <span style="color:${h.won ? "#34c759" : "#ff3b30"};font-weight:bold;">${h.won ? "WIN (+₹" + h.betAmt + ")" : "LOSS (-₹" + h.betAmt + ")"}</span>
+        </div>`;
+      });
+      document.getElementById("historyList").innerHTML = html;
+    }
+
+    function resetStats() {
+      historyLog = [];
       currentLevel = 1;
       totalPnl = 0;
+      renderHistory();
       updateUI();
+      alert("Tracker data reset.");
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+
+      document.getElementById(`page${tabName}`).classList.add("active");
+      const idx = tabName === "Tracker" ? 0 : tabName === "History" ? 1 : 2;
+      document.querySelectorAll(".nav-item")[idx].classList.add("active");
     }
 
     function openPaywall() {
       if (isPro) {
-        alert("You are already on PRO EDITION!");
+        alert("Pro Edition is already active!");
         return;
       }
       document.getElementById("paywallModal").style.display = "flex";
@@ -190,16 +317,16 @@
       document.getElementById("paywallModal").style.display = "none";
     }
 
-    async function verifyUTR() {
-      const input = (document.getElementById("utrInput").value || "").trim();
+    async function submitActivation() {
+      const codeOrUtr = (document.getElementById("utrInput").value || "").trim();
 
-      if (!input) {
-        alert("Please enter your UTR number or secret key.");
+      if (!codeOrUtr) {
+        alert("Please enter a 12-digit UTR or passcode.");
         return;
       }
 
-      // 1. Secret key unlocks directly
-      if (input.toLowerCase() === "reddy" || input.toLowerCase() === "mohan") {
+      // 1. Direct Unlock via Passcode
+      if (codeOrUtr.toLowerCase() === "reddy" || codeOrUtr.toLowerCase() === "mohan") {
         localStorage.setItem("dt_pro_unlocked", "true");
         isPro = true;
         applyProStatus();
@@ -208,8 +335,8 @@
         return;
       }
 
-      if (input.length < 8) {
-        alert("Please enter a valid 12-digit UTR.");
+      if (codeOrUtr.length < 8) {
+        alert("Please enter a valid 12-digit UTR number.");
         return;
       }
 
@@ -217,26 +344,7 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Submitting...";
 
-      let tgUser = "Unknown (Browser Session)";
-      let tgId = "Browser Session";
-
-      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-        const u = window.Telegram.WebApp.initDataUnsafe.user;
-        tgUser = (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
-        if (u.username) tgUser += " (@" + u.username + ")";
-        tgId = u.id;
-      }
-
-      const text = `💰 NEW PAYMENT RECEIVED\n\n👤 User: ${tgUser}\n🆔 Telegram ID: ${tgId}\n🔢 UTR Number: ${input}\n💵 Amount: ₹299\n\nPlease check your PhonePe/GPay app to verify.`;
-
-      const replyMarkup = {
-        inline_keyboard: [
-          [
-            { text: "✅ Approve (Send Key)", url: "https://t.me/share/url?url=Payment%20Approved!%20Your%20Pro%20Unlock%20Passcode%20is:%20Reddy" },
-            { text: "❌ Reject", url: "https://t.me/share/url?url=Payment%20Verification%20Failed.%20Invalid%20UTR." }
-          ]
-        ]
-      };
+      const msg = `💰 NEW PAYMENT RECEIVED\n\n👤 User: Standalone App User\n🔢 UTR Number: ${codeOrUtr}\n💵 Amount: ₹299\n\nVerify in PhonePe/GPay. If confirmed, tell the user to enter passcode: Reddy`;
 
       try {
         const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -244,23 +352,22 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chat_id: ADMIN_CHAT_ID,
-            text: text,
-            reply_markup: replyMarkup
+            text: msg
           })
         });
 
         const data = await res.json();
         if (data.ok) {
-          alert("UTR submitted! Once verified, enter code Reddy into this box to unlock.");
+          alert("UTR submitted successfully! Once Mohan verifies your payment, enter code Reddy in this box to unlock Pro.");
           closePaywall();
         } else {
           alert("Submission error: " + (data.description || "Try again"));
         }
       } catch (err) {
-        alert("Network error. Please try again.");
+        alert("Network error. Please check your internet connection.");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "SUBMIT UTR TO UNLOCK";
+        submitBtn.innerText = "SUBMIT / ACTIVATE";
       }
     }
 
