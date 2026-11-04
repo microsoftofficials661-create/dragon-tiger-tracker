@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dragon Tiger Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#121212" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #121212; color: #fff; padding: 16px 16px 80px 16px; display: flex; justify-content: center; }
+    .app-container { width: 100%; max-width: 420px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #ff9800; background: #221a0f; color: #ff9800; }
+    .badge.pro-active { background: #ff9800; color: #000; }
+    .stat-card { background: #1c1c1e; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .stat-val { font-size: 18px; font-weight: bold; margin-top: 4px; }
+    .pnl-pos { color: #4cd964; }
+    .pnl-neg { color: #ff3b30; }
+    .section-title { font-size: 13px; color: #8e8e93; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .btn-group { display: flex; gap: 10px; margin-bottom: 16px; }
+    .btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: #888; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; }
+    .btn.active-red { border-color: #ff3b30; color: #ff3b30; background: rgba(255, 59, 48, 0.1); }
+    .btn.active-black { border-color: #fff; color: #fff; background: rgba(255, 255, 255, 0.15); }
+    .btn.active-target { border-color: #ff3b30; background: #ff3b30; color: #fff; }
+    .suggestion-box { background: #1c1c1e; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+    .suggestion-text { font-size: 22px; font-weight: 800; color: #ff3b30; margin-top: 4px; letter-spacing: 1px; }
+    .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 24px; background: #e63946; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .submit-btn:active { opacity: 0.8; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .history-card { background: #1c1c1e; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .history-main { font-size: 14px; font-weight: bold; }
+    .history-sub { font-size: 12px; color: #8e8e93; margin-top: 4px; }
+    .clear-btn { background: none; border: none; color: #ff3b30; font-size: 13px; font-weight: bold; cursor: pointer; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .grid-box { background: #1c1c1e; padding: 16px; border-radius: 12px; text-align: center; }
+    .grid-label { font-size: 12px; color: #8e8e93; margin-bottom: 6px; }
+    .grid-num { font-size: 20px; font-weight: bold; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 900; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #8e8e93; cursor: pointer; background: none; border: none; }
+    .nav-item.active { color: #fff; }
+    .nav-pill { padding: 4px 16px; border-radius: 16px; margin-bottom: 4px; font-size: 16px; }
+    .nav-item.active .nav-pill { background: #3a1d1d; color: #ff3b30; }
+    .paywall-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.88); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+    .paywall-card { background: #1c1c1e; border: 1px solid #ff9800; border-radius: 16px; padding: 22px; width: 100%; max-width: 360px; text-align: center; position: relative; }
+    .close-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; color: #ff9800; font-size: 20px; cursor: pointer; }
+    .paywall-title { font-size: 18px; font-weight: 800; color: #ff9800; margin-bottom: 6px; }
+    .paywall-subtitle { font-size: 13px; color: #ccc; margin-bottom: 14px; }
+    .qr-container { background: #fff; padding: 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; }
+    .qr-container img { width: 160px; height: 160px; display: block; }
+    .upi-info { font-size: 14px; color: #ff9800; font-weight: bold; margin-bottom: 12px; }
+    .pay-link-btn { display: block; width: 100%; padding: 12px; background: #ff3b30; color: #fff; text-decoration: none; font-weight: bold; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+    .utr-input { width: 100%; padding: 12px; background: #2a2a2e; border: 1px solid #555; color: #fff; border-radius: 6px; margin-bottom: 8px; text-align: center; font-size: 14px; }
+    .verify-btn { width: 100%; padding: 12px; background: #4cd964; border: none; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <div>
+        <div style="font-size: 12px; color: #8e8e93;">WELCOME BACK,</div>
+        <h2 id="userName" style="font-size: 20px;">MOHAN</h2>
+      </div>
+      <button id="modeBadge" class="badge" onclick="onModeToggleClick()">NORMAL</button>
+    </div>
+
+    <!-- TRACKER TAB -->
+    <div id="view-tracker" class="tab-content active">
+      <div style="font-size: 18px; font-weight: 800; color: #ff3b30; margin-bottom: 2px;">DRAGON TIGER</div>
+      <div style="font-size: 12px; color: #8e8e93; margin-bottom: 14px;">Colour Card Tracker</div>
+
+      <div class="stat-card">
+        <div>
+          <div style="font-size: 12px; color: #8e8e93;">Level: <span id="levelLabel">1 of 8</span></div>
+          <div class="stat-val" style="color: #ffb703;">Next Bet: ₹<span id="betAmount">10</span></div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 12px; color: #8e8e93;">Total P&L</div>
+          <div id="pnlLabel" class="stat-val pnl-pos">+₹0.00</div>
+        </div>
+      </div>
+
+      <div class="section-title">First Colour</div>
+      <div class="btn-group">
+        <div id="c1-red" class="btn active-red" onclick="setColor(1, 'RED')">● RED</div>
+        <div id="c1-black" class="btn" onclick="setColor(1, 'BLACK')">● BLACK</div>
+      </div>
+
+      <div class="section-title">Second Colour</div>
+      <div class="btn-group">
+        <div id="c2-red" class="btn active-red" onclick="setColor(2, 'RED')">● RED</div>
+        <div id="c2-black" class="btn" onclick="setColor(2, 'BLACK')">● BLACK</div>
+      </div>
+
+      <div class="suggestion-box">
+        <div style="font-size: 11px; color: #8e8e93; font-weight: 700;">RULE-BASED SUGGESTION</div>
+        <div id="suggestionText" class="suggestion-text">DRAGON</div>
+      </div>
+
+      <div class="section-title">Actual Result</div>
+      <div class="btn-group">
+        <div id="res-dragon" class="btn active-target" onclick="setActualResult('Dragon')">Dragon</div>
+        <div id="res-tiger" class="btn" onclick="setActualResult('Tiger')">Tiger</div>
+      </div>
+
+      <button class="submit-btn" onclick="saveEntry()">SAVE ENTRY</button>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="view-history" class="tab-content">
+      <div class="history-header">
+        <div style="font-size: 18px; font-weight: bold;">Game history</div>
+        <button class="clear-btn" onclick="clearHistory()">Clear all</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="view-stats" class="tab-content">
+      <div style="font-size: 18px; font-weight: bold; margin-bottom: 14px;">Performance Stats</div>
+      <div class="stats-grid">
+        <div class="grid-box">
+          <div class="grid-label">Total Rounds</div>
+          <div id="statTotal" class="grid-num">0</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">Win Rate</div>
+          <div id="statRate" class="grid-num" style="color: #4cd964;">0%</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">Wins</div>
+          <div id="statWins" class="grid-num" style="color: #4cd964;">0</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">Losses</div>
+          <div id="statLosses" class="grid-num" style="color: #ff3b30;">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-tracker" onclick="switchTab('tracker')">
+      <div class="nav-pill">🎯</div>
+      Tracker
+    </button>
+    <button class="nav-item" id="nav-history" onclick="switchTab('history')">
+      <div class="nav-pill">📜</div>
+      History
+    </button>
+    <button class="nav-item" id="nav-stats" onclick="switchTab('stats')">
+      <div class="nav-pill">📊</div>
+      Stats
+    </button>
+  </div>
+
+  <!-- PAYWALL MODAL -->
+  <div id="paywall" class="paywall-overlay">
+    <div class="paywall-card">
+      <button class="close-btn" onclick="closePaywall()">✕</button>
+      <div class="paywall-title">UPGRADE TO PRO EDITION</div>
+      <div class="paywall-subtitle">Pay ₹299 for Pro Table &amp; 10 Levels Backup</div>
+      <div class="qr-container">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=konala@superyes%26pn=Mohan%26am=299.00%26cu=INR%26tn=DT%20Pro" alt="UPI QR" />
+      </div>
+      <div class="upi-info">UPI: konala@superyes</div>
+      <a href="upi://pay?pa=konala@superyes&pn=Mohan&am=299.00&cu=INR&tn=DT%20Pro" class="pay-link-btn">PAY ₹299 (OPEN UPI APP)</a>
+      <div style="margin-top: 10px;">
+        <input type="number" id="utrInput" class="utr-input" placeholder="Enter 12-digit UTR Number" />
+        <button class="verify-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        document.getElementById('userName').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
+      }
+    }
+
+    const levels = [10, 20, 50, 100, 200, 400, 800, 1650];
+    let currentLevel = 0, totalPnl = 0, isPro = false, c1 = 'RED', c2 = 'RED', actualResult = 'Dragon';
+    let historyData = JSON.parse(localStorage.getItem('dt_history') || '[]');
+
+    function calculateSuggestion() {
+      if (!isPro) {
+        if (c1 === 'RED' && c2 === 'RED') return 'DRAGON';
+        if (c1 === 'RED' && c2 === 'BLACK') return 'DRAGON';
+        if (c1 === 'BLACK' && c2 === 'BLACK') return 'TIGER';
+        if (c1 === 'BLACK' && c2 === 'RED') return 'DRAGON';
+      } else {
+        if (c1 === 'RED' && c2 === 'BLACK') return 'DRAGON';
+        if (c1 === 'RED' && c2 === 'RED') return 'DRAGON';
+        if (c1 === 'BLACK' && c2 === 'RED') return 'TIGER';
+        if (c1 === 'BLACK' && c2 === 'BLACK') return 'TIGER';
+      }
+      return 'DRAGON';
+    }
+
+    function updateSuggestion() {
+      document.getElementById('suggestionText').innerText = calculateSuggestion();
+    }
+
+    function onModeToggleClick() {
+      if (!localStorage.getItem('dt_pro_unlocked')) {
+        document.getElementById('paywall').style.display = 'flex';
+      } else {
+        isPro = !isPro;
+        const badge = document.getElementById('modeBadge');
+        badge.innerText = isPro ? 'PRO EDITION' : 'NORMAL';
+        badge.className = isPro ? 'badge pro-active' : 'badge';
+        updateSuggestion();
+      }
+    }
+
+    function closePaywall() {
+      document.getElementById('paywall').style.display = 'none';
+    }
+
+    function verifyUTR() {
+      const utr = document.getElementById('utrInput').value.trim();
+      if (utr.length === 12) {
+        localStorage.setItem('dt_pro_unlocked', 'true');
+        localStorage.setItem('dt_user_utr', utr);
+        isPro = true;
+        const badge = document.getElementById('modeBadge');
+        badge.innerText = 'PRO EDITION';
+        badge.className = 'badge pro-active';
+        closePaywall();
+        updateSuggestion();
+        alert('UTR Submitted! Pro Edition Unlocked.');
+      } else {
+        alert('Please enter a valid 12-digit UTR.');
+      }
+    }
+
+    function setColor(slot, color) {
+      if (slot === 1) {
+        c1 = color;
+        document.getElementById('c1-red').className = color === 'RED' ? 'btn active-red' : 'btn';
+        document.getElementById('c1-black').className = color === 'BLACK' ? 'btn active-black' : 'btn';
+      } else {
+        c2 = color;
+        document.getElementById('c2-red').className = color === 'RED' ? 'btn active-red' : 'btn';
+        document.getElementById('c2-black').className = color === 'BLACK' ? 'btn active-black' : 'btn';
+      }
+      updateSuggestion();
+    }
+
+    function setActualResult(res) {
+      actualResult = res;
+      document.getElementById('res-dragon').className = res === 'Dragon' ? 'btn active-target' : 'btn';
+      document.getElementById('res-tiger').className = res === 'Tiger' ? 'btn active-target' : 'btn';
+    }
+
+    function saveEntry() {
+      const predicted = calculateSuggestion();
+      const bet = levels[currentLevel];
+      const isWin = (predicted.toUpperCase() === actualResult.toUpperCase());
+      const levelPlayed = currentLevel + 1;
+      
+      let pnlChange = isWin ? (bet * 0.95) : -bet;
+      totalPnl += pnlChange;
+      currentLevel = isWin ? 0 : Math.min(currentLevel + 1, levels.length - 1);
+
+      historyData.unshift({
+        lvl: levelPlayed,
+        bet: bet,
+        target: predicted,
+        c1: c1,
+        c2: c2,
+        result: actualResult,
+        pnl: pnlChange,
+        isWin: isWin
+      });
+      localStorage.setItem('dt_history', JSON.stringify(historyData));
+
+      document.getElementById('levelLabel').innerText = `${currentLevel + 1} of ${levels.length}`;
+      document.getElementById('betAmount').innerText = levels[currentLevel];
+      const pnlEl = document.getElementById('pnlLabel');
+      pnlEl.innerText = `${totalPnl >= 0 ? '+' : '-'}₹${Math.abs(totalPnl).toFixed(2)}`;
+      pnlEl.className = `stat-val ${totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}`;
+
+      renderHistory();
+      renderStats();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      if (historyData.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:#555;margin-top:40px;">No entries yet</div>';
+        return;
+      }
+      list.innerHTML = historyData.map(item => `
+        <div class="history-card">
+          <div>
+            <div class="history-main">Lvl ${item.lvl} | ₹${item.bet} on ${item.target}</div>
+            <div class="history-sub">Cards: ${item.c1}+${item.c2} → ${item.result}</div>
+          </div>
+          <div class="history-main ${item.isWin ? 'pnl-pos' : 'pnl-neg'}">
+            ${item.isWin ? '+' : ''}${item.pnl.toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStats() {
+      const total = historyData.length;
+      const wins = historyData.filter(h => h.isWin).length;
+      const losses = total - wins;
+      const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statWins').innerText = wins;
+      document.getElementById('statLosses').innerText = losses;
+      document.getElementById('statRate').innerText = `${rate}%`;
+    }
+
+    function clearHistory() {
+      historyData = [];
+      localStorage.removeItem('dt_history');
+      totalPnl = 0;
+      currentLevel = 0;
+      document.getElementById('levelLabel').innerText = `1 of ${levels.length}`;
+      document.getElementById('betAmount').innerText = levels[0];
+      document.getElementById('pnlLabel').innerText = '+₹0.00';
+      document.getElementById('pnlLabel').className = 'stat-val pnl-pos';
+      renderHistory();
+      renderStats();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`view-${tab}`).classList.add('active');
+      document.getElementById(`nav-${tab}`).classList.add('active');
+      if (tab === 'history') renderHistory();
+      if (tab === 'stats') renderStats();
+    }
+
+    if (localStorage.getItem('dt_pro_unlocked')) {
+      isPro = true;
+      document.getElementById('modeBadge').innerText = 'PRO EDITION';
+      document.getElementById('modeBadge').className = 'badge pro-active';
+    }
+    updateSuggestion();
+    renderHistory();
+    renderStats();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
