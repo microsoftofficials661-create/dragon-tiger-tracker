@@ -12,32 +12,33 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Setup Java (JDK 17)
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Cordova & Build APK
+      - name: Build APK with Cordova
         run: |
           npm install -g cordova
-          cordova create app com.dragon.tigertracker "Dragon Tiger Tracker"
+          cordova create app com.dragon.tigertracker "DragonTigerTracker"
           cd app
           rm -rf www/*
-          cp -r ../index.html ../manifest.json ../sw.js www/
-          cordova platform add android
+          cp ../index.html ../manifest.json ../sw.js www/
+          cordova platform add android --save
           cordova build android --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: DragonTigerTracker-APK
-          path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/platforms/android/app/build/outputs/apk/debug/*.apk
