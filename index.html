@@ -6,7 +6,24 @@
   <title>Dragon Tiger Tracker</title>
   <link rel="manifest" href="/dragon-tiger-tracker/manifest.json" />
   <meta name="theme-color" content="#121212" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js">  function checkPasscode() {
+    const code = document.getElementById("passcodeInput").value.trim();
+    if (code === "PRO2026") {
+      localStorage.setItem("dt_pro_unlocked", "true");
+      isPro = true;
+      const badge = document.getElementById("modeBadge");
+      if (badge) {
+        badge.innerText = "PRO EDITION";
+        badge.className = "badge pro-active";
+      }
+      if (typeof updateSuggestion === "function") updateSuggestion();
+      closePaywall();
+      alert("Pro Edition successfully activated!");
+    } else {
+      alert("Invalid activation code. Please check with Mohan.");
+    }
+  }
+</script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #121212; color: #fff; padding: 16px 16px 80px 16px; display: flex; justify-content: center; }
