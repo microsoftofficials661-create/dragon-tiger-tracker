@@ -169,14 +169,18 @@
       </div>
       <div class="upi-info">UPI: konala@superyes</div>
       <a href="upi://pay?pa=konala@superyes&pn=Mohan&am=299.00&cu=INR&tn=DT%20Pro" class="pay-link-btn">PAY ₹299 (OPEN UPI APP)</a>
+      
       <div style="margin-top: 10px;">
         <input type="number" id="utrInput" class="utr-input" placeholder="Enter 12-digit UTR Number" />
-        <button class="verify-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
+        <button id="submitUtrBtn" class="verify-btn" onclick="verifyUTR()">SUBMIT UTR TO UNLOCK</button>
       </div>
     </div>
   </div>
 
   <script>
+    const ADMIN_CHAT_ID = "1084729184"; 
+    const BOT_TOKEN = "9214949604:AAHfN-q4KpDl6sSyNlWac5HBTNYyw15ksBA";
+
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
@@ -225,20 +229,61 @@
       document.getElementById('paywall').style.display = 'none';
     }
 
-    function verifyUTR() {
+    async function verifyUTR() {
       const utr = document.getElementById('utrInput').value.trim();
-      if (utr.length === 12) {
-        localStorage.setItem('dt_pro_unlocked', 'true');
-        localStorage.setItem('dt_user_utr', utr);
-        isPro = true;
-        const badge = document.getElementById('modeBadge');
-        badge.innerText = 'PRO EDITION';
-        badge.className = 'badge pro-active';
-        closePaywall();
-        updateSuggestion();
-        alert('UTR Submitted! Pro Edition Unlocked.');
-      } else {
-        alert('Please enter a valid 12-digit UTR.');
+      const btn = document.getElementById('submitUtrBtn');
+
+      if (utr.length !== 12) {
+        alert('Please enter a valid 12-digit UTR number.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Submitting...";
+
+      const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const userName = user ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Unknown';
+      const userHandle = user?.username ? `@${user.username}` : 'No username';
+      const userId = user?.id || 'Browser Session';
+
+      const alertMsg = `💰 *NEW PAYMENT RECEIVED*\n\n` +
+                       `👤 *User:* ${userName} (${userHandle})\n` +
+                       `🆔 *Telegram ID:* \`${userId}\`\n` +
+                       `🔢 *UTR Number:* \`${utr}\`\n` +
+                       `💵 *Amount:* ₹299\n\n` +
+                       `Please check your PhonePe/GPay app to verify.`;
+
+      try {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: ADMIN_CHAT_ID,
+            text: alertMsg,
+            parse_mode: 'Markdown'
+          })
+        });
+
+        if (response.ok) {
+          localStorage.setItem('dt_pro_unlocked', 'true');
+          localStorage.setItem('dt_user_utr', utr);
+          isPro = true;
+
+          const badge = document.getElementById('modeBadge');
+          badge.innerText = 'PRO EDITION';
+          badge.className = 'badge pro-active';
+          updateSuggestion();
+
+          closePaywall();
+          alert('UTR submitted successfully! Pro Edition unlocked.');
+        } else {
+          alert('Failed to send verification request. Check your internet connection.');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "SUBMIT UTR TO UNLOCK";
       }
     }
 
